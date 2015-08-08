@@ -1,0 +1,23 @@
+<!-- <Import Project="NuGet.targets" /> -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="AfterBuild">
+    <GetAssemblyIdentity AssemblyFiles="$(TargetDir)$(AssemblyName).dll">
+      <Output TaskParameter="Assemblies" ItemName="AssemblyInfo" />
+    </GetAssemblyIdentity>
+    <PropertyGroup>
+      <BuildVersion>%(AssemblyInfo.Version)</BuildVersion>
+    </PropertyGroup>
+    <Message Text="Starting NuGet build step." Importance="high" />
+    <Exec Command="del /f /q &quot;$(AssemblyName).$(BuildVersion)$(Prerelease).nupkg &quot;" />
+    <Message Text="Creating NuGet package $(AssemblyName).$(BuildVersion)$(Prerelease).nupkg" Importance="high" />
+    <Exec Command="$(MSBuildThisFileDirectory)..\tools\nuget.exe pack &quot;$(ProjectDir)$(MSBuildProjectFile)&quot; -IncludeReferencedProjects -Properties prerelease=&quot;$(Prerelease)&quot;;OutputPath=&quot;$(TargetDir) &quot; -OutputDirectory &quot;$(TargetDir) &quot;" />
+    <Message Text="Done building NuGet package." Importance="high" />
+  </Target>
+  <PropertyGroup>
+    <CleanDependsOn> NuGetClean; $(CleanDependsOn) </CleanDependsOn>
+  </PropertyGroup>
+  <Target Name="NuGetClean">
+    <Message Text="Deleting existing NuGet package." Importance="high" />
+    <Exec Command="del /f /q &quot;$(TargetDir)$(AssemblyName).*.nupkg &quot;" />
+  </Target>
+</Project>

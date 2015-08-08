@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>Robusto</id>
+        <version>1.0.0</version>
+        <authors>Mike Dempster</authors>
+        <owners>Mike Dempster</owners>
+        <projectUrl>https://github.com/mike-dempster/Robusto</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <developmentDependency>true</developmentDependency>
+        <description>Creates a NuGet package of a project and its dependencies on build.</description>
+        <tags>NuGet Packager</tags>
+    </metadata>
+    <files>
+        <file src="build\Robusto.targets" target="build\Robusto.targets" />
+        <file src="tools\nuget.exe" target="tools\nuget.exe" />
+    </files>
+</package>
