@@ -9,7 +9,7 @@
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <developmentDependency>true</developmentDependency>
         <description>Creates a NuGet package of a project and its dependencies on build.</description>
-        <tags>NuGet Packager</tags>
+        <tags>Robusto NuGet Packager</tags>
     </metadata>
     <files>
         <file src="build\Robusto.targets" target="build\Robusto.targets" />
