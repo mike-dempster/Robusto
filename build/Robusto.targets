@@ -1,22 +1,53 @@
 <!-- <Import Project="NuGet.targets" /> -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Target Name="AfterBuild">
-    <GetAssemblyIdentity AssemblyFiles="$(TargetDir)$(AssemblyName).dll">
+  <PropertyGroup>
+    <NuGetPush>false</NuGetPush>
+    <NuGetPushApiToken></NuGetPushApiToken>
+    <NuGetPushSource></NuGetPushSource>
+    <NugetPushOptions></NugetPushOptions>
+  </PropertyGroup>
+  <Target Name="NuGetBuild" AfterTargets="AfterBuild" BeforeTargets="Build">
+    <PropertyGroup>
+      <OutputFileExtension Condition="$(OutputType) == Library">.dll</OutputFileExtension>
+      <OutputFileExtension Condition="$(OutputType) == Exe">.exe</OutputFileExtension>
+      <OutputFileExtension Condition="$(OutputType) == Module">.netmodule</OutputFileExtension>
+      <OutputFileExtension Condition="$(OutputType) == Winexe">.exe</OutputFileExtension>
+    </PropertyGroup>
+    <GetAssemblyIdentity AssemblyFiles="$(TargetDir)$(AssemblyName)$(OutputFileExtension)">
       <Output TaskParameter="Assemblies" ItemName="AssemblyInfo" />
     </GetAssemblyIdentity>
     <PropertyGroup>
       <BuildVersion>%(AssemblyInfo.Version)</BuildVersion>
     </PropertyGroup>
-    <Message Text="Starting NuGet build step." Importance="high" />
+    <Message Text="Starting NuGet build step..." Importance="high" />
     <Exec Command="del /f /q &quot;$(AssemblyName).$(BuildVersion)$(Prerelease).nupkg &quot;" />
-    <Message Text="Creating NuGet package $(AssemblyName).$(BuildVersion)$(Prerelease).nupkg" Importance="high" />
+    <Message Text="Creating NuGet package for $(AssemblyName)..." Importance="high" />
     <Exec Command="&quot;$(MSBuildThisFileDirectory)..\tools\nuget.exe&quot; pack &quot;$(ProjectDir)$(MSBuildProjectFile)&quot; -IncludeReferencedProjects -Properties prerelease=&quot;$(Prerelease)&quot;;OutputPath=&quot;$(TargetDir) &quot; -OutputDirectory &quot;$(TargetDir) &quot;" />
     <Message Text="Done building NuGet package." Importance="high" />
   </Target>
-  <PropertyGroup>
-    <CleanDependsOn> NuGetClean; $(CleanDependsOn) </CleanDependsOn>
-  </PropertyGroup>
-  <Target Name="NuGetClean">
+  <Target Name="NuGetPush" AfterTargets="AfterBuild" BeforeTargets="Build" DependsOnTargets="NuGetBuild" Condition="$(NuGetPush) == true">
+    <PropertyGroup>
+      <OutputFileExtension Condition="$(OutputType) == Library">.dll</OutputFileExtension>
+      <OutputFileExtension Condition="$(OutputType) == Exe">.exe</OutputFileExtension>
+      <OutputFileExtension Condition="$(OutputType) == Module">.netmodule</OutputFileExtension>
+      <OutputFileExtension Condition="$(OutputType) == Winexe">.exe</OutputFileExtension>
+    </PropertyGroup>
+    <GetAssemblyIdentity AssemblyFiles="$(TargetDir)$(AssemblyName)$(OutputFileExtension)">
+      <Output TaskParameter="Assemblies" ItemName="AssemblyInfo" />
+    </GetAssemblyIdentity>
+    <PropertyGroup>
+      <BuildVersion>%(AssemblyInfo.Version)</BuildVersion>
+      <BasePushCommand>&quot;$(MSBuildThisFileDirectory)..\tools\nuget.exe&quot; push &quot;$(MSBuildProjectDirectory)\$(OutputPath)$(AssemblyName).$(BuildVersion).nupkg&quot; $(NuGetPushApiToken)</BasePushCommand>
+    </PropertyGroup>
+    <Message Text="Publishing nupkg..." Importance="high" />
+    <!-- if no source was defined -->
+    <Exec Condition="$(NuGetPushSource) == ''" Command="$(BasePushCommand) $(NugetPushOptions)" />
+    <!-- else if source was defined -->
+    <Exec Condition="$(NuGetPushSource) != ''" Command="$(BasePushCommand) -s $(NuGetPushSource) $(NugetPushOptions)" />
+    <!-- end if -->
+    <Message Text="Publish complete." Importance="high" />
+  </Target>
+  <Target Name="NuGetClean" AfterTargets="Clean">
     <Message Text="Deleting existing NuGet package." Importance="high" />
     <Exec Command="del /f /q &quot;$(TargetDir)$(AssemblyName).*.nupkg &quot;" />
   </Target>
